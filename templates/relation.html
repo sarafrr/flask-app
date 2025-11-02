@@ -1,0 +1,124 @@
+<!doctype html>
+<html lang="it">
+<head>
+  <meta charset="utf-8">
+  <title>Relazione tra nodi</title>
+  <style>
+    body {
+      display: flex;
+      flex-direction: column;
+      justify-content: center;
+      align-items: center;
+      height: 100vh;
+      background: #f4f6f8;
+      font-family: 'Segoe UI', sans-serif;
+    }
+
+    .container {
+      display: flex;
+      align-items: center;
+      position: relative;
+      margin-bottom: 40px;
+    }
+
+    .cerchio {
+      width: 120px;
+      height: 120px;
+      border-radius: 50%;
+      background-color: #3498db;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      color: white;
+      font-size: 1.1rem;
+      font-weight: 600;
+      box-shadow: 0 0 10px rgba(0,0,0,0.2);
+      z-index: 1;
+    }
+
+    .freccia {
+      position: relative;
+      width: 220px;
+      height: 2px;
+      background-color: #555;
+      margin: 0 20px;
+    }
+
+    .freccia::after {
+      content: "";
+      position: absolute;
+      right: 0;
+      top: 50%;
+      transform: translateY(-50%);
+      border-top: 8px solid transparent;
+      border-bottom: 8px solid transparent;
+      border-left: 12px solid #555;
+    }
+
+    .etichetta {
+      position: absolute;
+      top: -25px;
+      left: 50%;
+      transform: translateX(-50%);
+      background: white;
+      padding: 4px 8px;
+      border-radius: 6px;
+      border: 1px solid #ccc;
+      box-shadow: 0 0 4px rgba(0,0,0,0.1);
+      color: #333;
+      font-size: 0.9rem;
+    }
+
+    .buttons {
+      display: flex;
+      gap: 20px;
+    }
+
+    button {
+      padding: 10px 18px;
+      font-size: 1rem;
+      border: none;
+      border-radius: 8px;
+      cursor: pointer;
+      font-weight: 600;
+      box-shadow: 0 3px 6px rgba(0, 0, 0, 0.15);
+      transition: all 0.2s ease;
+    }
+
+    .accept {
+      background-color: #2ecc71;
+      color: white;
+    }
+
+    .accept:hover {
+      background-color: #27ae60;
+    }
+
+    .reject {
+      background-color: #e74c3c;
+      color: white;
+    }
+
+    .reject:hover {
+      background-color: #c0392b;
+    }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <div class="cerchio">{{ node_from }}</div>
+    <div class="freccia">
+      <div class="etichetta">{{ relation }}</div>
+    </div>
+    <div class="cerchio">{{ node_to }}</div>
+  </div>
+
+  <form action="{{ url_for('handle_decision') }}" method="POST" class="buttons">
+    <input type="hidden" name="node_from" value="{{ node_from }}">
+    <input type="hidden" name="node_to" value="{{ node_to }}">
+    <input type="hidden" name="relation" value="{{ relation }}">
+    <button type="submit" name="decision" value="accepted" class="accept">✅ Accept</button>
+    <button type="submit" name="decision" value="rejected" class="reject">❌ Reject</button>
+  </form>
+</body>
+</html>
