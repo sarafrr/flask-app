@@ -1,124 +1,175 @@
 <!doctype html>
-<html lang="it">
+<html lang="en">
 <head>
-  <meta charset="utf-8">
-  <title>Relazione tra nodi</title>
-  <style>
-    body {
-      display: flex;
-      flex-direction: column;
-      justify-content: center;
-      align-items: center;
-      height: 100vh;
-      background: #f4f6f8;
-      font-family: 'Segoe UI', sans-serif;
-    }
+<meta charset="utf-8">
+<title>Relation Graph</title>
+<style>
+  body {
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    align-items: center;
+    height: 100vh;
+    background: #f8f9fa;
+    font-family: 'Inter', sans-serif;
+  }
 
-    .container {
-      display: flex;
-      align-items: center;
-      position: relative;
-      margin-bottom: 40px;
-    }
+  svg {
+    overflow: visible;
+  }
 
-    .cerchio {
-      width: 120px;
-      height: 120px;
-      border-radius: 50%;
-      background-color: #3498db;
-      display: flex;
-      justify-content: center;
-      align-items: center;
-      color: white;
-      font-size: 1.1rem;
-      font-weight: 600;
-      box-shadow: 0 0 10px rgba(0,0,0,0.2);
-      z-index: 1;
-    }
+  .node {
+    fill: #ffb38a;
+    stroke: #e65b2e;
+    stroke-width: 2;
+    filter: drop-shadow(0 2px 3px rgba(0,0,0,0.1));
+  }
 
-    .freccia {
-      position: relative;
-      width: 220px;
-      height: 2px;
-      background-color: #555;
-      margin: 0 20px;
-    }
+  .node-label {
+    font-size: 14px;
+    font-weight: 600;
+    fill: #222;
+    text-anchor: middle;
+  }
 
-    .freccia::after {
-      content: "";
-      position: absolute;
-      right: 0;
-      top: 50%;
-      transform: translateY(-50%);
-      border-top: 8px solid transparent;
-      border-bottom: 8px solid transparent;
-      border-left: 12px solid #555;
-    }
+  .arrow {
+    stroke: #444;
+    stroke-width: 2.5;
+    fill: none;
+    marker-end: url(#arrowhead);
+  }
 
-    .etichetta {
-      position: absolute;
-      top: -25px;
-      left: 50%;
-      transform: translateX(-50%);
-      background: white;
-      padding: 4px 8px;
-      border-radius: 6px;
-      border: 1px solid #ccc;
-      box-shadow: 0 0 4px rgba(0,0,0,0.1);
-      color: #333;
-      font-size: 0.9rem;
-    }
+  .relation-box, .probability-box {
+    fill: #fff;
+    stroke: #bbb;
+    stroke-width: 0.8;
+    rx: 5;
+    ry: 5;
+    filter: drop-shadow(0 1px 2px rgba(0,0,0,0.15));
+  }
 
-    .buttons {
-      display: flex;
-      gap: 20px;
-    }
+  .relation-text, .probability-text {
+    font-size: 12px;
+    font-weight: 600;
+    fill: #222;
+    text-anchor: middle;
+    dominant-baseline: middle;
+  }
 
-    button {
-      padding: 10px 18px;
-      font-size: 1rem;
-      border: none;
-      border-radius: 8px;
-      cursor: pointer;
-      font-weight: 600;
-      box-shadow: 0 3px 6px rgba(0, 0, 0, 0.15);
-      transition: all 0.2s ease;
-    }
+  .buttons {
+    display: flex;
+    gap: 24px;
+    margin-top: 5px;
+  }
 
-    .accept {
-      background-color: #2ecc71;
-      color: white;
-    }
+  button {
+    padding: 10px 22px;
+    font-size: 15px;
+    border: none;
+    border-radius: 10px;
+    cursor: pointer;
+    font-weight: 600;
+    color: white;
+    box-shadow: 0 4px 8px rgba(0,0,0,0.15);
+    transition: all 0.2s ease;
+  }
 
-    .accept:hover {
-      background-color: #27ae60;
-    }
+  .accept { background-color: #2ecc71; }
+  .accept:hover { background-color: #27ae60; }
 
-    .reject {
-      background-color: #e74c3c;
-      color: white;
-    }
-
-    .reject:hover {
-      background-color: #c0392b;
-    }
-  </style>
+  .reject { background-color: #e74c3c; }
+  .reject:hover { background-color: #c0392b; }
+</style>
 </head>
 <body>
-  <div class="container">
-    <div class="cerchio">{{ node_from }}</div>
-    <div class="freccia">
-      <div class="etichetta">{{ relation }}</div>
-    </div>
-    <div class="cerchio">{{ node_to }}</div>
-  </div>
 
-  <form action="{{ url_for('handle_decision') }}" method="POST" class="buttons">
-    <input type="hidden" name="node_from" value="{{ node_from }}">
-    <input type="hidden" name="node_to" value="{{ node_to }}">
-    <input type="hidden" name="relation" value="{{ relation }}">
-    <button type="submit" name="decision" value="accepted" class="accept">✅ Accept</button>
-    <button type="submit" name="decision" value="rejected" class="reject">❌ Reject</button>
-  </form>
+<svg width="600" height="260">
+  <defs>
+    <marker id="arrowhead" markerWidth="12" markerHeight="8" refX="10" refY="4" orient="auto">
+      <polygon points="0 0, 12 4, 0 8" fill="#444" />
+    </marker>
+  </defs>
+
+  <!-- Left node -->
+  <g transform="translate(150,120)">
+    <circle class="node" r="45"></circle>
+    <text class="node-label" id="labelLeft"></text>
+  </g>
+
+  <!-- Arrow -->
+  <line class="arrow" x1="195" y1="120" x2="405" y2="120" />
+
+  <!-- Relation -->
+  <g transform="translate(300,95)">
+    <rect class="relation-box" width="100" height="26" x="-50" y="-13"></rect>
+    <text class="relation-text">{{ relation }}</text>
+  </g>
+
+  <!-- Probability -->
+  <g transform="translate(300,150)">
+    <rect class="probability-box" width="100" height="26" x="-50" y="-13"></rect>
+    <text class="probability-text">p={{ probability }}</text>
+  </g>
+
+  <!-- Right node -->
+  <g transform="translate(450,120)">
+    <circle class="node" r="45"></circle>
+    <text class="node-label" id="labelRight"></text>
+  </g>
+</svg>
+
+<form action="{{ url_for('handle_decision') }}" method="POST" class="buttons">
+  <input type="hidden" name="node_from" value="{{ node_from }}">
+  <input type="hidden" name="node_to" value="{{ node_to }}">
+  <input type="hidden" name="relation" value="{{ relation }}">
+  <input type="hidden" name="probability" value="{{ probability }}">
+  <button type="submit" name="decision" value="accepted" class="accept">✅ Accept</button>
+  <button type="submit" name="decision" value="rejected" class="reject">❌ Reject</button>
+</form>
+
+<script>
+  const leftText = `{{ node_from }}`;
+  const rightText = `{{ node_to }}`;
+
+  function wrapAndCenter(textElement, text, maxChars = 10) {
+    const words = text.split(' ');
+    let line = '';
+    let lines = [];
+
+    // Break into lines
+    for (let w of words) {
+      if ((line + w).length > maxChars) {
+        lines.push(line.trim());
+        line = w + ' ';
+      } else {
+        line += w + ' ';
+      }
+    }
+    if (line) lines.push(line.trim());
+
+    // Clear old tspans
+    while (textElement.firstChild) textElement.removeChild(textElement.firstChild);
+
+    // Compute vertical centering offset
+    const lineHeight = 16; // roughly 1.2em at font-size 14px
+    const totalHeight = lineHeight * lines.length;
+    const startY = -(totalHeight - lineHeight) / 2;
+
+    // Add tspans for each line
+    lines.forEach((l, i) => {
+      const tspan = document.createElementNS("http://www.w3.org/2000/svg", "tspan");
+      tspan.textContent = l;
+      tspan.setAttribute("x", "0");
+      tspan.setAttribute("y", startY + i * lineHeight);
+      textElement.appendChild(tspan);
+    });
+  }
+
+  window.addEventListener("load", () => {
+    wrapAndCenter(document.getElementById("labelLeft"), leftText, 10);
+    wrapAndCenter(document.getElementById("labelRight"), rightText, 10);
+  });
+</script>
+
 </body>
 </html>
